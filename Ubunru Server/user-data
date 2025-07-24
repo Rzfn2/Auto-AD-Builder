@@ -1,0 +1,84 @@
+#cloud-config
+autoinstall:
+  version: 1   # Required: autoinstall config format version
+
+  # User account configuration
+  identity:
+    realname: "Abdullah"           # Full name of the primary user
+    username: abdullah               # Username to create
+    password: "$1$uQvy6o6V$K2F2D91R3SXMbV0CWQ5H30"  # Pre-hashed password ("Password")
+    hostname: ubuntu-server         # Hostname of the system
+
+  # Disk setup using LVM on the whole disk
+  storage:
+    layout:
+      name: lvm                     # Use LVM partitioning scheme
+      sizing-policy: all            # Use the entire disk
+
+  # Keyboard and locale settings
+  keyboard:
+    layout: us                      # Keyboard layout (US)
+    variant: ""                     # No variant
+  locale: en_US.UTF-8               # Locale setting
+  timezone: Etc/UTC                 # Timezone (UTC)
+
+  # Automatically update the installer before installation starts
+  refresh-installer:
+    update: true                    # Enable installer update
+    channel: "stable/ubuntu-$REL"   # Update from stable channel
+
+  # Network configuration: DHCP on VMware's default NIC
+  network:
+    version: 2                      # Netplan config version
+    ethernets:
+      ens160:                       # VMware's default interface (adjust if needed)
+        dhcp4: true                 # Enable IPv4 DHCP
+
+  # APT repository and mirror configuration
+  apt:
+    geoip: true                     # Use GeoIP to pick nearest mirror
+    preserve_sources_list: false    # Replace existing sources.list
+    mirror-selection:
+      primary:
+        - country-mirror            # Use country mirror first
+        - uri: "http://archive.ubuntu.com/ubuntu"         # Main Ubuntu archive
+          arches: [i386, amd64]
+        - uri: "http://ports.ubuntu.com/ubuntu-ports"     # Ports archive for other architectures
+          arches: [s390x, arm64, armhf, powerpc, ppc64el, riscv64]
+    fallback: abort                 # Abort if no mirror available
+
+  # SSH server installation and configuration
+  ssh:
+    install-server: true            # Install OpenSSH server
+    allow-pw: true                  # Allow password authentication
+    authorized-keys: []             # No SSH keys preconfigured
+
+  # Packages to install automatically
+  packages:
+    - vim                           # Text editor
+    - curl                          # Command-line HTTP client
+    - htop                          # Interactive process viewer
+    - open-vm-tools                 # VMware guest tools for better integration
+
+  # Install media codecs (optional)
+  codecs:
+    install: true                   # Install restricted codecs
+
+  # Install third-party drivers (optional)
+  drivers:
+    install: true                   # Install proprietary drivers if needed
+
+  # Update all packages after installation completes
+  updates: all                      # Install all available updates
+
+  # Reboot automatically after install completes
+  shutdown: reboot                  # Reboot the machine when done
+
+  # Collect installer logs if the installation fails
+  error-commands:
+    - tar -czf /installer-logs.tar.gz /var/log/installer     # Archive installer logs
+    - journalctl -b > /installer-journal.log                 # Capture system journal
+
+  # Disable kernel crash dumps
+  kernel-crash-dumps:
+    enabled: false                   # Disable crash dump collection
