@@ -1,5 +1,5 @@
 <#
-    Setup-Client.ps1
+   Auto-Client.ps1
     DESCRIPTION:
     This script configures a Windows 11 client machine to:
     - Install & configure Splunk Universal Forwarder
@@ -33,6 +33,10 @@ $DomainFQDN     = "ABDULLAH-AD.local"
 $DomainUser     = "ABDULLAH-AD\Administrator"
 $DomainPassword = "Rzfn@123"
 
+# Auto-Login for next boot
+$AutoLoginUser = "Administrator"
+$AutoLoginPassword = "Rzfn@123"
+$Domain = "ABDULLAH-AD"
 # ================================
 # SECTION 2: Install & Configure Splunk Universal Forwarder
 # ================================
@@ -46,7 +50,7 @@ $DownloadURL = "https://download.splunk.com/products/universalforwarder/releases
 
 Invoke-WebRequest -Uri $DownloadURL -OutFile $InstallerPath
 
-Write-Host "🛠 Installing Splunk Universal Forwarder..." -ForegroundColor Cyan
+Write-Host "Installing Splunk Universal Forwarder..." -ForegroundColor Cyan
 Start-Process msiexec.exe -ArgumentList "/i `"$InstallerPath`" AGREETOLICENSE=Yes /quiet" -Wait
 
 # Generate outputs.conf
@@ -189,9 +193,6 @@ Write-Host "A reboot is recommended to finalize the domain join and policy sync.
 
 Write-Host "`nEnabling Auto-Login for next boot..." -ForegroundColor Cyan
 
-$AutoLoginUser = "Administrator"
-$AutoLoginPassword = "Rzfn@123"
-$Domain = "ABDULLAH-AD"
 
 $RegPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
