@@ -1,5 +1,5 @@
 <#
-    AutoAD_MasterConfiguration.ps1
+    AutoDC_Configuration.ps1
 
     DESCRIPTION:
     This script prepares a Windows Server for automated Active Directory deployment and log forwarding using Splunk.
