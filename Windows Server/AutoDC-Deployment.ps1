@@ -1,143 +1,122 @@
 <#
-    MasterDeployment.ps1
-    GitHub-Friendly Script to Deploy Active Directory OUs, Groups, Users, and GPOs
-    Designed for automated AD environment configuration post-DC setup and reboot.
+    AutoDC-Deployment.ps1
+    Run this script AFTER reboot and logging in as Domain Administrator.
+    This configures OUs, groups, users, policies, and basic features.
 #>
 
-# ================================
-# SECTION 1: Global Variables
-# ================================
+$DomainName = "ABDULLAH-AD"
 
-# Domain name and DN (DN is auto-derived)
-$DomainName = "ABDULLAH-AD.local"
-$DomainDN = ($DomainName -split '\.') -replace { "DC=$($_)" } -join ','
+# ===========================
+# Create Organizational Units
+# ===========================
+Write-Host "Creating Organizational Units..."
 
-# Organizational Units
-$OUs = @("IT", "HR", "Finance", "Sales", "Marketing")
+New-ADOrganizationalUnit -Name "IT" -Path "DC=$DomainName,DC=local"
+New-ADOrganizationalUnit -Name "HR" -Path "DC=$DomainName,DC=local"
+New-ADOrganizationalUnit -Name "Finance" -Path "DC=$DomainName,DC=local"
+New-ADOrganizationalUnit -Name "Sales" -Path "DC=$DomainName,DC=local"
+New-ADOrganizationalUnit -Name "Marketing" -Path "DC=$DomainName,DC=local"
 
-# Security Groups
-$Groups = @{
-    "IT"        = "IT Group"
-    "HR"        = "HR Group"
-    "Finance"   = "Finance Group"
-    "Sales"     = "Sales Group"
-    "Marketing" = "Marketing Group"
+# ===========================
+# Create Security Groups
+# ===========================
+Write-Host "Creating Security Groups..."
+
+New-ADGroup -Name "IT Group" -GroupScope Global -Path "OU=IT,DC=$DomainName,DC=local"
+New-ADGroup -Name "HR Group" -GroupScope Global -Path "OU=HR,DC=$DomainName,DC=local"
+New-ADGroup -Name "Finance Group" -GroupScope Global -Path "OU=Finance,DC=$DomainName,DC=local"
+New-ADGroup -Name "Sales Group" -GroupScope Global -Path "OU=Sales,DC=$DomainName,DC=local"
+New-ADGroup -Name "Marketing Group" -GroupScope Global -Path "OU=Marketing,DC=$DomainName,DC=local"
+
+# ===========================
+# Create Users
+# ===========================
+Write-Host "Creating User Accounts..."
+
+# IT Users
+New-ADUser -Name "Khalid IT" -SamAccountName "khalid.it" -AccountPassword (ConvertTo-SecureString "ITpass123!" -AsPlainText -Force) -Enabled $true -Path "OU=IT,DC=$DomainName,DC=local"
+New-ADUser -Name "Ali IT" -SamAccountName "ali.it" -AccountPassword (ConvertTo-SecureString "AliIT@123" -AsPlainText -Force) -Enabled $true -Path "OU=IT,DC=$DomainName,DC=local"
+
+# HR Users
+New-ADUser -Name "Fatima HR" -SamAccountName "F.hr" -AccountPassword (ConvertTo-SecureString "HRsimple1!" -AsPlainText -Force) -Enabled $true -Path "OU=HR,DC=$DomainName,DC=local"
+New-ADUser -Name "Yasmin HR" -SamAccountName "yasmin.hr" -AccountPassword (ConvertTo-SecureString "WelcomeHR!" -AsPlainText -Force) -Enabled $true -Path "OU=HR,DC=$DomainName,DC=local"
+
+# Finance Users
+New-ADUser -Name "Layla Finance" -SamAccountName "layla.finance" -AccountPassword (ConvertTo-SecureString "Finance007!" -AsPlainText -Force) -Enabled $true -Path "OU=Finance,DC=$DomainName,DC=local"
+New-ADUser -Name "Rakan Finance" -SamAccountName "rakan.finance" -AccountPassword (ConvertTo-SecureString "FinSimple2!" -AsPlainText -Force) -Enabled $true -Path "OU=Finance,DC=$DomainName,DC=local"
+
+# Sales Users
+New-ADUser -Name "Yousef Sales" -SamAccountName "yousef.sales" -AccountPassword (ConvertTo-SecureString "SalesPass1!" -AsPlainText -Force) -Enabled $true -Path "OU=Sales,DC=$DomainName,DC=local"
+New-ADUser -Name "Henry Sales" -SamAccountName "henry.sales" -AccountPassword (ConvertTo-SecureString "Henry321!" -AsPlainText -Force) -Enabled $true -Path "OU=Sales,DC=$DomainName,DC=local"
+
+# Marketing Users
+New-ADUser -Name "Omar Marketing" -SamAccountName "omar.marketing" -AccountPassword (ConvertTo-SecureString "omarPass9!" -AsPlainText -Force) -Enabled $true -Path "OU=Marketing,DC=$DomainName,DC=local"
+New-ADUser -Name "Jack Marketing" -SamAccountName "jack.marketing" -AccountPassword (ConvertTo-SecureString "Jack@2024" -AsPlainText -Force) -Enabled $true -Path "OU=Marketing,DC=$DomainName,DC=local"
+
+# Abdullah Admin Account
+New-ADUser -Name "Abdullah BNR" -SamAccountName "abdullah" -AccountPassword (ConvertTo-SecureString "Rzfn@123" -AsPlainText -Force) -Enabled $true -Path "OU=IT,DC=$DomainName,DC=local"
+Add-ADGroupMember -Identity "Domain Admins" -Members "abdullah"
+
+# ===========================
+# Add Users to Their Groups
+# ===========================
+Write-Host "Adding Users to Groups..."
+
+Add-ADGroupMember -Identity "IT Group" -Members "khalid.it","ali.it"
+Add-ADGroupMember -Identity "HR Group" -Members "F.hr","yasmin.hr"
+Add-ADGroupMember -Identity "Finance Group" -Members "layla.finance","rakan.finance"
+Add-ADGroupMember -Identity "Sales Group" -Members "yousef.sales","henry.sales"
+Add-ADGroupMember -Identity "Marketing Group" -Members "omar.marketing","jack.marketing"
+
+# ===========================
+# Create Group Policy
+# ===========================
+Write-Host "Creating and Linking Group Policy..."
+
+$gpo = Get-GPO -Name "BaselinePolicy" -ErrorAction SilentlyContinue
+if (-not $gpo) {
+    $gpo = New-GPO -Name "BaselinePolicy"
 }
 
-# Users
-$UserData = @{
-    "IT" = @(
-        @{ Name = "Alice IT";      User = "alice.it";      Pass = "ITpass123!" },
-        @{ Name = "Bob IT";        User = "bob.it";        Pass = "Bob321pass" }
-    )
-    "HR" = @(
-        @{ Name = "Carol HR";      User = "carol.hr";      Pass = "HRsimple1" },
-        @{ Name = "Dave HR";       User = "dave.hr";       Pass = "WelcomeHR!" }
-    )
-    "Finance" = @(
-        @{ Name = "Eve Finance";   User = "eve.finance";   Pass = "Finance007" },
-        @{ Name = "Frank Finance"; User = "frank.finance"; Pass = "FinSimple2" }
-    )
-    "Sales" = @(
-        @{ Name = "Grace Sales";   User = "grace.sales";   Pass = "SalesPass1" },
-        @{ Name = "Henry Sales";   User = "henry.sales";   Pass = "Henry321" }
-    )
-    "Marketing" = @(
-        @{ Name = "Ivy Marketing"; User = "ivy.marketing"; Pass = "IvyPass9" },
-        @{ Name = "Jack Marketing";User = "jack.marketing";Pass = "JackSimple" }
-    )
+if ($gpo) {
+    New-GPLink -Name $gpo.DisplayName -Target "DC=$DomainName,DC=local"
+
+    # Disable password complexity
+    Set-GPRegistryValue -Name $gpo.DisplayName `
+        -Key "HKLM\System\CurrentControlSet\Control\Lsa" `
+        -ValueName "PasswordComplexity" `
+        -Type DWord `
+        -Value 0
+
+    # Set minimum password length to 6
+    Set-GPRegistryValue -Name $gpo.DisplayName `
+        -Key "HKLM\System\CurrentControlSet\Control\Lsa" `
+        -ValueName "MinimumPasswordLength" `
+        -Type DWord `
+        -Value 6
+} else {
+    Write-Warning "GPO creation failed. Skipping GPO configuration."
 }
 
-# Admin Account
-$AdminUser = "abdullah"
-$AdminPass = "Rzfn@123"
-$AdminName = "Abdullah BNR"
+# ===========================
+# Enable SMBv1 and RDP
+# ===========================
+#Write-Host "Enabling SMBv1 and Remote Desktop..."
 
-# GPO
-$GPOName = "BaselinePolicy"
+#try {
+#    Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
+#} catch {
+#    Write-Warning "SMBv1 could not be enabled. It may not be available on this OS."
+#}
+#
+#Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+#Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-# ================================
-# SECTION 2: Create OUs and Groups
-# ================================
+# ===========================
+# Enable Null Sessions
+# ===========================
+Write-Host "Allowing Null Sessions..."
 
-Write-Host "`n=== Creating Organizational Units ==="
-foreach ($ou in $OUs) {
-    New-ADOrganizationalUnit -Name $ou -Path $DomainDN -ErrorAction SilentlyContinue
-}
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "RestrictAnonymous" -Value 0 -PropertyType DWord -Force
 
-Write-Host "`n=== Creating Security Groups ==="
-foreach ($ou in $Groups.Keys) {
-    $groupName = $Groups[$ou]
-    $ouPath = "OU=$ou,$DomainDN"
-    New-ADGroup -Name $groupName -GroupScope Global -Path $ouPath -ErrorAction SilentlyContinue
-}
-
-# ================================
-# SECTION 3: Create Users
-# ================================
-
-Write-Host "`n=== Creating Users ==="
-foreach ($ou in $UserData.Keys) {
-    $users = $UserData[$ou]
-    foreach ($user in $users) {
-        $userPath = "OU=$ou,$DomainDN"
-        New-ADUser -Name $user.Name `
-                   -SamAccountName $user.User `
-                   -AccountPassword (ConvertTo-SecureString $user.Pass -AsPlainText -Force) `
-                   -Enabled $true `
-                   -Path $userPath
-    }
-}
-
-Write-Host "`n=== Creating Admin Account ==="
-New-ADUser -Name $AdminName -SamAccountName $AdminUser `
-    -AccountPassword (ConvertTo-SecureString $AdminPass -AsPlainText -Force) `
-    -Enabled $true -Path "OU=IT,$DomainDN"
-
-Add-ADGroupMember -Identity "Domain Admins" -Members $AdminUser
-
-# ================================
-# SECTION 4: Add Users to Groups
-# ================================
-
-Write-Host "`n=== Adding Users to Security Groups ==="
-foreach ($ou in $UserData.Keys) {
-    $users = $UserData[$ou]
-    $group = $Groups[$ou]
-    $usernames = $users | ForEach-Object { $_.User }
-    Add-ADGroupMember -Identity $group -Members $usernames
-}
-
-# ================================
-# SECTION 5: Create and Link GPO
-# ================================
-
-Write-Host "`n=== Creating and Linking GPO: $GPOName ==="
-$gpo = New-GPO -Name $GPOName -ErrorAction SilentlyContinue
-New-GPLink -Name $gpo.DisplayName -Target $DomainDN
-
-# Disable password complexity
-Set-GPRegistryValue -Name $GPOName `
-    -Key "HKLM\System\CurrentControlSet\Control\Lsa" `
-    -ValueName "PasswordComplexity" -Type DWord -Value 0
-
-# Set minimum password length to 6
-Set-GPRegistryValue -Name $GPOName `
-    -Key "HKLM\System\CurrentControlSet\Control\Lsa" `
-    -ValueName "MinimumPasswordLength" -Type DWord -Value 6
-
-# ================================
-# SECTION 6: Enable Features
-# ================================
-
-Write-Host "`n=== Enabling SMBv1 and RDP ==="
-Set-SmbServerConfiguration -EnableSMB1Protocol $true -Force
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" `
-                 -Name "fDenyTSConnections" -Value 0
-Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-
-Write-Host "`n=== Allowing Null Sessions ==="
-New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" `
-                 -Name "RestrictAnonymous" -Value 0 -PropertyType DWord -Force
-
-Write-Host "`n Master deployment complete. AD environment is fully configured."
+Write-Host "Master deployment complete. Environment is fully configured."
