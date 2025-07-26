@@ -1,10 +1,9 @@
 #!/bin/bash
 
 #######################################################################
-# setup_splunk_ubuntu.sh
-#
-# Purpose: Automates installation and preparation of Splunk Enterprise
-#          on Ubuntu to act as a central log receiver.
+# Auto-UbuntuSetup.sh
+# Purpose: Automates installation and preparation of Splunk Enterprise 
+# on Ubuntu to act as a central log receiver.
 #######################################################################
 
 # ================================
