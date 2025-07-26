@@ -119,4 +119,4 @@ Write-Host "Allowing Null Sessions..."
 
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -Name "RestrictAnonymous" -Value 0 -PropertyType DWord -Force
 
-Write-Host "Master deployment complete. Environment is fully configured."
+Write-Host "Deployment is completed. Environment is fully configured."
