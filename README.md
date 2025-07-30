@@ -151,6 +151,16 @@ This script will:
 * Follow the OS setup guide links first before script deployment.
 * Ensure all scripts are executed from elevated/administrator terminals.
 * Adjust network configuration if using a different IP range.
+---
+## 📸 Screenshots
+<img width="863" height="511" alt="image" src="https://github.com/user-attachments/assets/027fe76f-3bac-4057-bec3-4b5ae9bd8cc4" />
+
+
+<img width="1910" height="871" alt="image" src="https://github.com/user-attachments/assets/941cab90-25da-4ba0-ba43-79918499bf16" />
+
+
+<img width="1904" height="826" alt="image" src="https://github.com/user-attachments/assets/a55466f5-b64a-4d6d-8f62-3494b3ef119e" />
+
 
 ---
 
