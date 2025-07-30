@@ -14,9 +14,9 @@ The setup uses custom unattended installation files and automation scripts to st
 
 Please begin by following the individual OS setup guides to create and install your virtual machines:
 
-* 🪟 [Windows 11 Client Setup](./windows11/README.md)
-* 🖥️ [Windows Server 2022 Setup](./windows-server/README.md)
-* 🐧 [Ubuntu Server Setup](./ubuntu-server/README.md)
+* 🪟 [Windows 11 Client Setup](https://github.com/Rzfn2/Auto-AD-Builder/tree/main/Windows%2011)
+* 🖥️ [Windows Server 2022 Setup](https://github.com/Rzfn2/Auto-AD-Builder/tree/main/Windows%20Server)
+* 🐧 [Ubuntu Server Setup](https://github.com/Rzfn2/Auto-AD-Builder/tree/main/Ubunru%20Server)
 
 ---
 
