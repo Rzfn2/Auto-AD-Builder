@@ -8,7 +8,7 @@ This guide explains how to automatically install and configure a Windows 11 clie
 
 * Windows 11 ISO 
 * [AnyBurn](https://www.anyburn.com/) to embed the unattend file into the ISO
-* [Autounattend XML] (https://github.com/Rzfn2/Auto-AD-Builder/blob/main/Windows%2011/autounattend.xml) file 
+* [Autounattend XML](https://github.com/Rzfn2/Auto-AD-Builder/blob/main/Windows%2011/autounattend.xml) file 
 
 ---
 
