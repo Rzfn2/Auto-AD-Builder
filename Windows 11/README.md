@@ -23,7 +23,7 @@ This guide explains how to automatically install and configure a Windows 11 clie
 5. Make sure it's placed at the **root** of the ISO structure.
 6. Click **Save As** and name the new ISO (e.g., `Win11-Auto.iso`).
 
-> ✅ Default credentials used in Autounattend.xml are typically:
+> ✅ Default credentials used in Autounattend.xml are:
 >
 > * **Username:** Administrator
 > * **Password:** Rzfn@123
